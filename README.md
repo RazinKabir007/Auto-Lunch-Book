@@ -25,7 +25,7 @@ Login **once manually**, then let GitHub Actions handle booking automatically on
 ├── .github/
 │   └── workflows/
 │       └── lunch.yml
-├── auto-run.js
+├── auto_lunch_book.js
 ├── package.json
 ├── package-lock.json
 ├── README.md
