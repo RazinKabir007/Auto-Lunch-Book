@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-         with:
+        with:
           persist-credentials: true   # 👈 allow push
 
       - name: Setup Node.js
