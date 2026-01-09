@@ -1,0 +1,35 @@
+name: Auto Lunch Booking
+
+on:
+  schedule:
+    # Saturday to Thursday (UTC+6 = Bangladesh)
+    - cron: '0 3 * * 0,1,2,3,4'
+  workflow_dispatch:
+
+jobs:
+  book:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium
+
+      - name: Run lunch booking
+        run: node auto_lunch_book.js
+
+      - name: Upload screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: booking-proof
+          path: final-state.png
