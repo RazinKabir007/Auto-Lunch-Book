@@ -17,7 +17,7 @@ const { chromium } = require('playwright');
   await page.waitForLoadState('networkidle');
 
   // 3️⃣ Stabilization delay (React re-render protection)
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(5000);
 
   const sw = page.locator('[role="switch"]').first();
 
@@ -59,6 +59,7 @@ const { chromium } = require('playwright');
     result = stateAfter.final ? 'BOOKING_SUCCESS' : 'BOOKING_REJECTED';
   }
 
+  await page.waitForTimeout(2000);
   await page.screenshot({ path: 'final-state.png' });
 
   console.log(`
