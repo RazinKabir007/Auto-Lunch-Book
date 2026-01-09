@@ -74,7 +74,7 @@ npm -v
 
 ## 3️⃣ Create Playwright Project
 
-```bash
+```powershell
 mkdir LUNCH_BOOK
 cd LUNCH_BOOK
 npm init -y
@@ -259,40 +259,56 @@ name: Auto Lunch Booking
 
 on:
   schedule:
-    - cron: '0 4 * * 0,1,2,3,4'
+    # Saturday to Thursday (UTC+6 = Bangladesh)
+    - cron: '0 3 * * 0,1,2,3,4'
   workflow_dispatch:
-
+  
 permissions:
-  contents: write
+  contents: write   # 👈 REQUIRED to push PNG to main branch
 
 jobs:
-  book-lunch:
+  book:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true   # 👈 allow push
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-      - run: npx playwright install chromium
+      - name: Install Playwright browser
+        run: npx playwright install chromium
 
-      - name: Run booking
+      - name: Run lunch booking
         env:
           ULKA_AUTH_JSON: ${{ secrets.ULKA_AUTH_JSON }}
-        run: node auto-run.js
+        run: node auto_lunch_book.js
 
-      - name: Commit screenshot
+      - name: Upload screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: booking-proof
+          path: final-state.png
+
+          # 🔽 NEW STEP: Commit PNG to main branch
+      - name: Commit screenshot to main branch
         run: |
           if [ -f final-state.png ]; then
             git config user.name "github-actions"
             git config user.email "github-actions@github.com"
             git add final-state.png
-            git commit -m "📸 Lunch booking proof"
-            git push
+            git commit -m "📸 Update lunch booking screenshot [auto]" || echo "No changes to commit"
+            git push origin main
+          else
+            echo "❌ Screenshot not found"
           fi
 ```
 ## Upload following file in repo:
