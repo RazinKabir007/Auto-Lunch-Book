@@ -1,5 +1,16 @@
 const { chromium } = require('playwright');
 
+/* 🔐 ADD THIS PART (secrets handling) */
+if (!process.env.ULKA_AUTH_JSON) {
+  throw new Error('ULKA_AUTH_JSON secret is missing');
+}
+ 
+fs.writeFileSync(
+  'ulka-auth.json',
+  Buffer.from(process.env.ULKA_AUTH_JSON, 'base64')
+);
+/* 🔐 END secrets handling */
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
 
