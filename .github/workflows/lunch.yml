@@ -31,6 +31,8 @@ jobs:
         run: npx playwright install chromium
 
       - name: Run lunch booking
+        env:
+          ULKA_AUTH_JSON: ${{ secrets.ULKA_AUTH_JSON }}
         run: node auto_lunch_book.js
 
       - name: Upload screenshot
