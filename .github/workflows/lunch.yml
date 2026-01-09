@@ -5,6 +5,9 @@ on:
     # Saturday to Thursday (UTC+6 = Bangladesh)
     - cron: '0 3 * * 0,1,2,3,4'
   workflow_dispatch:
+  
+permissions:
+  contents: write   # 👈 REQUIRED to push PNG to main branch
 
 jobs:
   book:
@@ -13,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+         with:
+          persist-credentials: true   # 👈 allow push
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,6 +31,8 @@ jobs:
         run: npx playwright install chromium
 
       - name: Run lunch booking
+        env:
+          ULKA_AUTH_JSON: ${{ secrets.ULKA_AUTH_JSON }}
         run: node auto_lunch_book.js
 
       - name: Upload screenshot
@@ -33,3 +40,16 @@ jobs:
         with:
           name: booking-proof
           path: final-state.png
+
+          # 🔽 NEW STEP: Commit PNG to main branch
+      - name: Commit screenshot to main branch
+        run: |
+          if [ -f final-state.png ]; then
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git add final-state.png
+            git commit -m "📸 Update lunch booking screenshot [auto]" || echo "No changes to commit"
+            git push origin main
+          else
+            echo "❌ Screenshot not found"
+          fi
