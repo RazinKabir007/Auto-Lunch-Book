@@ -1,4 +1,5 @@
 const { chromium } = require('playwright');
+const fs = require('fs');
 
 /* 🔐 ADD THIS PART (secrets handling) */
 if (!process.env.ULKA_AUTH_JSON) {
