@@ -1,10 +1,5 @@
 const { chromium } = require('playwright');
 
-// Restore auth state from GitHub secret
-if (process.env.ULKA_AUTH_JSON) {
-  fs.writeFileSync('ulka-auth.json', process.env.ULKA_AUTH_JSON);
-}
-
 (async () => {
   const browser = await chromium.launch({ headless: true });
 
