@@ -145,73 +145,106 @@ Value: (paste clipboard)
 
 ## 6️⃣ Auto Booking Script
 
-### auto-run.js
+### auto_lunch_book.js
 
 ```js
-const fs = require('fs');
 const { chromium } = require('playwright');
+const fs = require('fs');
 
+/* 🔐 ADD THIS PART (secrets handling) */
 if (!process.env.ULKA_AUTH_JSON) {
-  throw new Error('ULKA_AUTH_JSON secret missing');
+  throw new Error('ULKA_AUTH_JSON secret is missing');
 }
-
+ 
 fs.writeFileSync(
   'ulka-auth.json',
   Buffer.from(process.env.ULKA_AUTH_JSON, 'base64')
 );
-
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 5000;
+/* 🔐 END secrets handling */
 
 (async () => {
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    let browser;
+  const browser = await chromium.launch({ headless: true });
 
-    try {
-      console.log(`🔁 Attempt ${attempt}/${MAX_RETRIES}`);
+  const context = await browser.newContext({
+    storageState: 'ulka-auth.json'
+  });
 
-      browser = await chromium.launch({ headless: true });
+  const page = await context.newPage();
+  await page.goto('https://www.ulka.autos/lunch-booking');
 
-      const context = await browser.newContext({
-        storageState: 'ulka-auth.json'
-      });
+  // 1️⃣ Wait for UI
+  await page.waitForSelector('[role="switch"]', { timeout: 60000 });
 
-      const page = await context.newPage();
-      await page.goto('https://www.ulka.autos/lunch-booking', { timeout: 60000 });
+  // 2️⃣ Wait for backend booking-state sync
+  await page.waitForLoadState('networkidle');
 
-      await page.waitForSelector('[role="switch"]', { timeout: 60000 });
-      await page.waitForTimeout(5000);
+  // 3️⃣ Stabilization delay (React re-render protection)
+  await page.waitForTimeout(5000);
 
-      const result = await page.evaluate(() => {
-        const sw = document.querySelector('[role="switch"]');
-        if (!sw) return 'NO_SWITCH_FOUND';
+  const sw = page.locator('[role="switch"]').first();
 
-        const aria = sw.getAttribute('aria-checked');
-        const disabled =
-          sw.classList.contains('ant-switch-disabled') ||
-          sw.hasAttribute('disabled');
+  // 4️⃣ Read state BEFORE click (robust)
+  const stateBefore = await sw.evaluate(el => {
+    const aria = el.getAttribute('aria-checked');
+    const cls = el.classList.contains('ant-switch-checked');
+    return {
+      ariaChecked: aria,
+      classChecked: cls,
+      final: aria === 'true' || cls === true
+    };
+  });
 
-        if (aria === 'true' || disabled) return 'ALREADY_BOOKED';
+  let result;
+  let stateAfter = null;
 
-        sw.click();
-        return 'CLICKED_TO_BOOK';
-      });
+  if (stateBefore.final === true) {
+    result = 'ALREADY_BOOKED';
+  } else {
+    // Attempt booking ONCE
+    await sw.click();
 
-      await page.waitForTimeout(2000);
-      await page.screenshot({ path: 'final-state.png', fullPage: true });
+    // Wait for backend decision
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1500);
 
-      console.log('🍱 Result:', result);
+    // Read state AFTER click
+    stateAfter = await sw.evaluate(el => {
+      const aria = el.getAttribute('aria-checked');
+      const cls = el.classList.contains('ant-switch-checked');
+      return {
+        ariaChecked: aria,
+        classChecked: cls,
+        final: aria === 'true' || cls === true
+      };
+    });
 
-      await browser.close();
-      process.exit(0);
-
-    } catch (err) {
-      console.error(err);
-      if (browser) await browser.close();
-      if (attempt === MAX_RETRIES) process.exit(1);
-      await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
-    }
+    result = stateAfter.final ? 'BOOKING_SUCCESS' : 'BOOKING_REJECTED';
   }
+
+  await page.waitForTimeout(2000);
+  await page.screenshot({ path: 'final-state.png' });
+
+  console.log(`
+🍱 Lunch booking attempt finished
+--------------------------------
+State BEFORE click:
+  aria-checked  : ${stateBefore.ariaChecked}
+  class checked : ${stateBefore.classChecked}
+  final         : ${stateBefore.final}
+
+${stateAfter ? `State AFTER click:
+  aria-checked  : ${stateAfter.ariaChecked}
+  class checked : ${stateAfter.classChecked}
+  final         : ${stateAfter.final}
+` : ''}
+Result : ${result}
+`);
+
+  await browser.close();
+
+  console.log(`
+🧹 Browser closed
+`);
 })();
 ```
 
