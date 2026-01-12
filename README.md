@@ -28,6 +28,7 @@ Login **once manually**, then let GitHub Actions handle booking automatically on
 ├── auto_lunch_book.js
 ├── package.json
 ├── package-lock.json
+├── holidays.json
 ├── README.md
 ```
 
