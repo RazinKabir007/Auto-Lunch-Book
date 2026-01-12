@@ -74,7 +74,27 @@ fs.writeFileSync(
   await page.waitForTimeout(2000);
   await page.screenshot({ path: 'final-state.png' });
 
+    // 📅 Date / Time / Day of execution (UTC+6 Bangladesh)
+  const now = new Date();
+
+  const options = {
+    timeZone: 'Asia/Dhaka',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  };
+
+  const formatted = new Intl.DateTimeFormat('en-US', options).format(now);
+
   console.log(`
+⏰ Execution Info
+----------------
+${formatted}
 🍱 Lunch booking attempt finished
 --------------------------------
 State BEFORE click:
