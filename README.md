@@ -151,6 +151,41 @@ Value: (paste clipboard)
 const { chromium } = require('playwright');
 const fs = require('fs');
 
+/* =====================================================
+   🇧🇩 HOLIDAY CHECK (NEXT DAY)
+   If tomorrow is a holiday → skip today’s booking
+   ===================================================== */
+
+// Load holidays
+const holidayData = JSON.parse(fs.readFileSync('holidays.json', 'utf8'));
+const holidays = holidayData.holidays;
+
+// Current time in Bangladesh
+const now = new Date(
+  new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' })
+);
+
+// Calculate tomorrow (Bangladesh time)
+const tomorrow = new Date(now);
+tomorrow.setDate(now.getDate() + 1);
+
+// Format YYYY-MM-DD safely (Bangladesh timezone)
+const tomorrowStr = tomorrow.toLocaleDateString('en-CA', {
+  timeZone: 'Asia/Dhaka'
+});
+
+// Check if tomorrow is a holiday
+const tomorrowHoliday = holidays.find(h => h.date === tomorrowStr);
+
+if (tomorrowHoliday) {
+  console.log(`🎉 Tomorrow is a holiday: ${tomorrowHoliday.name}`);
+  console.log('🚫 Skipping today’s lunch booking');
+  process.exit(0); // ✅ graceful success exit
+} else {
+  console.log(`✅ Tomorrow ${tomorrowStr} is a working day`);
+  console.log('🍱 Initiating today’s lunch booking...');
+}
+
 /* 🔐 ADD THIS PART (secrets handling) */
 if (!process.env.ULKA_AUTH_JSON) {
   throw new Error('ULKA_AUTH_JSON secret is missing');
