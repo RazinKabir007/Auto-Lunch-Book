@@ -95,6 +95,7 @@ fs.writeFileSync(
 ⏰ Execution Info
 ----------------
 ${formatted}
+
 🍱 Lunch booking attempt finished
 --------------------------------
 State BEFORE click:
