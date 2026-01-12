@@ -143,7 +143,7 @@ Value: (paste clipboard)
 
 ---
 
-## Create holidays.json file and upload it to repo
+## 6️⃣ Create holidays.json file and upload it to repo
 
 ```json
 {
@@ -295,7 +295,7 @@ Value: (paste clipboard)
 
 ```
 
-## 6️⃣ Auto Booking Script
+## 7️⃣ Auto Booking Script
 
 ### auto_lunch_book.js
 
@@ -437,7 +437,7 @@ Result : ${result}
 
 ---
 
-## 7️⃣ GitHub Actions Workflow
+## 8️⃣ GitHub Actions Workflow
 
 ### .github/workflows/lunch.yml
 
