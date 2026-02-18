@@ -456,7 +456,7 @@ permissions:
 
 jobs:
   book:
-    if vars.WORKFLOW_ENABLED == 'true'
+    if: vars.WORKFLOW_ENABLED == 'true'
     runs-on: ubuntu-latest
 
     steps:
