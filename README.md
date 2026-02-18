@@ -456,6 +456,7 @@ permissions:
 
 jobs:
   book:
+    if vars.WORKFLOW_ENABLED == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -499,12 +500,19 @@ jobs:
             echo "❌ Screenshot not found"
           fi
 ```
-## Upload following file in repo:
+## Upload the following file in repo:
 
 - `package.json`
 - `package-lock.json`
   
 ---
+
+## Set WORKFLOW_ENABLED variable:
+
+- Go to the settings ⚙️ tab.
+- Enter **Secrets and variables** -> **Actions** -> **Variables**.
+- **New repository variable**
+- **Name: WORKFLOW_ENABLED** ; **Value: true**
 
 ## 🔐 Security Notes
 
@@ -517,3 +525,10 @@ jobs:
 ## ✅ Done
 
 Lunch booking will now run automatically via GitHub Actions.
+
+---
+
+## ⏸️ Pause the workflow for a certain amount of time manually (e.g. Ramadan month)
+
+- Set the WORKFLOW_ENABLED variable ***false*** in the setting tab.
+- Change it to ***true*** when the event is over.
