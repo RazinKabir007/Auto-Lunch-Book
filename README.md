@@ -514,6 +514,8 @@ jobs:
 - **New repository variable**
 - Now set **Name: WORKFLOW_ENABLED** ; **Value: true**
 
+---
+
 ## 🔐 Security Notes
 
 - Repository must be **PRIVATE**
