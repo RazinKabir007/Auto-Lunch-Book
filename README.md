@@ -512,7 +512,7 @@ jobs:
 - Go to the settings ⚙️ tab.
 - Enter **Secrets and variables** -> **Actions** -> **Variables**.
 - **New repository variable**
-- **Name: WORKFLOW_ENABLED** ; **Value: true**
+- Now set **Name: WORKFLOW_ENABLED** ; **Value: true**
 
 ## 🔐 Security Notes
 
