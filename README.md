@@ -358,20 +358,33 @@ fs.writeFileSync(
   });
 
   const page = await context.newPage();
-  await page.goto('https://www.ulka.autos/lunch-booking');
+   page.setDefaultTimeout(60000);
+   page.setDefaultNavigationTimeout(60000);
+   
+   console.log('Launching browser...');
+  await page.goto(
+     'https://www.ulka.autos/lunch-booking',
+     { waitUntil: 'domcontentloaded', timeout: 60000 }
+  );
+   // Debug current page
+   console.log('Current URL:', page.url());
+   await page.screenshot({ path: 'debug-before-switch.png' });
 
   // 1️⃣ Wait for UI
+   console.log('Waiting for switch...');
   await page.waitForSelector('[role="switch"]', { timeout: 60000 });
+   console.log('Switch found');
 
   // 2️⃣ Wait for backend booking-state sync
   await page.waitForLoadState('networkidle');
 
   // 3️⃣ Stabilization delay (React re-render protection)
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(3000);
 
   const sw = page.locator('[role="switch"]').first();
 
   // 4️⃣ Read state BEFORE click (robust)
+   console.log('Reading state...');
   const stateBefore = await sw.evaluate(el => {
     const aria = el.getAttribute('aria-checked');
     const cls = el.classList.contains('ant-switch-checked');
@@ -389,11 +402,12 @@ fs.writeFileSync(
     result = 'ALREADY_BOOKED';
   } else {
     // Attempt booking ONCE
+     console.log('Clicking switch...');
     await sw.click();
 
     // Wait for backend decision
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1500);
+    //await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(3000);
 
     // Read state AFTER click
     stateAfter = await sw.evaluate(el => {
@@ -410,9 +424,31 @@ fs.writeFileSync(
   }
 
   await page.waitForTimeout(2000);
+   console.log('Taking screenshot...');
   await page.screenshot({ path: 'final-state.png' });
 
+    // 📅 Date / Time / Day of execution (UTC+6 Bangladesh)
+  const now = new Date();
+
+  const options = {
+    timeZone: 'Asia/Dhaka',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  };
+
+  const formatted = new Intl.DateTimeFormat('en-US', options).format(now);
+
   console.log(`
+⏰ Execution Info
+----------------
+${formatted}
+
 🍱 Lunch booking attempt finished
 --------------------------------
 State BEFORE click:
@@ -434,6 +470,7 @@ Result : ${result}
 🧹 Browser closed
 `);
 })();
+
 ```
 
 ---
@@ -448,8 +485,11 @@ name: Auto Lunch Booking
 on:
   schedule:
     # Saturday to Thursday (UTC+6 = Bangladesh)
-    - cron: '0 3 * * 0,1,2,3,4'
+    - cron: '0 2 * * 0,1,2,3,4'
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   
 permissions:
   contents: write   # 👈 REQUIRED to push PNG to main branch
@@ -457,8 +497,13 @@ permissions:
 jobs:
   book:
     if: vars.WORKFLOW_ENABLED == 'true'
+    timeout-minutes: 20
+    
     runs-on: ubuntu-latest
-
+    
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -468,13 +513,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Install Playwright browser
-        run: npx playwright install chromium
 
       - name: Run lunch booking
         env:
@@ -490,6 +532,8 @@ jobs:
           # 🔽 NEW STEP: Commit PNG to main branch
       - name: Commit screenshot to main branch
         run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          
           if [ -f final-state.png ]; then
             git config user.name "github-actions"
             git config user.email "github-actions@github.com"
