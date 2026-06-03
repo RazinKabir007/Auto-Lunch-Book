@@ -48,8 +48,6 @@ fs.writeFileSync(
 /* 🔐 END secrets handling */
 
 (async () => {
-   page.setDefaultTimeout(60000);
-   page.setDefaultNavigationTimeout(60000);
   const browser = await chromium.launch({ headless: true });
 
   const context = await browser.newContext({
@@ -57,6 +55,8 @@ fs.writeFileSync(
   });
 
   const page = await context.newPage();
+   page.setDefaultTimeout(60000);
+   page.setDefaultNavigationTimeout(60000);
    
    console.log('Launching browser...');
   await page.goto(
