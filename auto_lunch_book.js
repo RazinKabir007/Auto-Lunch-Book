@@ -63,6 +63,9 @@ fs.writeFileSync(
      'https://www.ulka.autos/lunch-booking',
      { waitUntil: 'domcontentloaded', timeout: 60000 }
   );
+   // Debug current page
+   console.log('Current URL:', page.url());
+   await page.screenshot({ path: 'debug-before-switch.png' });
 
   // 1️⃣ Wait for UI
    console.log('Waiting for switch...');
