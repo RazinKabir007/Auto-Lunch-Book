@@ -35,7 +35,9 @@ jobs:
         
       #Temporarily removing this:
       - name: Install Playwright browser
-        run: npx playwright install chromium-headless-shell
+        run: | 
+          npx playwright --version
+          time npx playwright install chromium-headless-shell
 
       - name: Run lunch booking
         #run: echo "Skipping booking for debugging"
