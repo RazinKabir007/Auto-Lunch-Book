@@ -35,11 +35,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Check disk space
-        run: |
-          df -h
-          ls -la /tmp
         
       #Temporarily removing this:
       #- name: Install Playwright browser
@@ -57,16 +52,12 @@ jobs:
           name: booking-proof
           path: final-state.png
 
-      - name: Debug workspace
-        run: |
-          pwd
-          ls -la
-          ls -la .git || true
-          git status || true
           
           # 🔽 NEW STEP: Commit PNG to main branch
       - name: Commit screenshot to main branch
         run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          
           if [ -f final-state.png ]; then
             git config user.name "github-actions"
             git config user.email "github-actions@github.com"
