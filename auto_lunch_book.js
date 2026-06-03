@@ -103,8 +103,8 @@ fs.writeFileSync(
     await sw.click();
 
     // Wait for backend decision
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1500);
+    //await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(3000);
 
     // Read state AFTER click
     stateAfter = await sw.evaluate(el => {
