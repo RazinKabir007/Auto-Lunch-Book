@@ -57,6 +57,13 @@ jobs:
           name: booking-proof
           path: final-state.png
 
+      - name: Debug workspace
+        run: |
+          pwd
+          ls -la
+          ls -la .git || true
+          git status || true
+          
           # 🔽 NEW STEP: Commit PNG to main branch
       - name: Commit screenshot to main branch
         run: |
