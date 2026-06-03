@@ -48,6 +48,8 @@ fs.writeFileSync(
 /* 🔐 END secrets handling */
 
 (async () => {
+   page.setDefaultTimeout(60000);
+   page.setDefaultNavigationTimeout(60000);
   const browser = await chromium.launch({ headless: true });
 
   const context = await browser.newContext({
