@@ -15,6 +15,7 @@ permissions:
 jobs:
   book:
     if: vars.WORKFLOW_ENABLED == 'true'
+    timeout-minutes: 15
     
     runs-on: ubuntu-latest
 
