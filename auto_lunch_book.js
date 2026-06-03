@@ -73,7 +73,7 @@ fs.writeFileSync(
    console.log('Switch found');
 
   // 2️⃣ Wait for backend booking-state sync
-  // await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('networkidle');
 
   // 3️⃣ Stabilization delay (React re-render protection)
   await page.waitForTimeout(3000);
