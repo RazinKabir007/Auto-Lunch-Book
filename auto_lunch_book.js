@@ -55,20 +55,28 @@ fs.writeFileSync(
   });
 
   const page = await context.newPage();
-  await page.goto('https://www.ulka.autos/lunch-booking');
+   
+   console.log('Launching browser...');
+  await page.goto(
+     'https://www.ulka.autos/lunch-booking',
+     { waitUntil: 'domcontentloaded', timeout: 60000 }
+  );
 
   // 1️⃣ Wait for UI
+   console.log('Waiting for switch...');
   await page.waitForSelector('[role="switch"]', { timeout: 60000 });
+   console.log('Switch found');
 
   // 2️⃣ Wait for backend booking-state sync
-  await page.waitForLoadState('networkidle');
+  // await page.waitForLoadState('networkidle');
 
   // 3️⃣ Stabilization delay (React re-render protection)
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(3000);
 
   const sw = page.locator('[role="switch"]').first();
 
   // 4️⃣ Read state BEFORE click (robust)
+   console.log('Reading state...');
   const stateBefore = await sw.evaluate(el => {
     const aria = el.getAttribute('aria-checked');
     const cls = el.classList.contains('ant-switch-checked');
@@ -86,6 +94,7 @@ fs.writeFileSync(
     result = 'ALREADY_BOOKED';
   } else {
     // Attempt booking ONCE
+     console.log('Clicking switch...');
     await sw.click();
 
     // Wait for backend decision
@@ -107,6 +116,7 @@ fs.writeFileSync(
   }
 
   await page.waitForTimeout(2000);
+   console.log('Taking screenshot...');
   await page.screenshot({ path: 'final-state.png' });
 
     // 📅 Date / Time / Day of execution (UTC+6 Bangladesh)
